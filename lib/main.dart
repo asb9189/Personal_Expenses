@@ -73,14 +73,17 @@ class MyHomePage extends StatelessWidget {
                         Text(
                           DateFormat.yMMMd().format(tx.date),
                           style: TextStyle(color: Colors.grey),
-                        )
-                      ],)
-
+                          )
+                        ],
+                      )
                     ],
-                  ));
-              }).toList(),)
-
-          ],
-        ));
+                  )
+                );
+              }
+            ).toList(),
+          )
+        ],
+      )
+    );
   }
 }
