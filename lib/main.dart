@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import './transaction.dart';
-import 'package:intl/intl.dart';
+import 'package:personal_expenses/widgets/new_transaction.dart';
+import 'package:personal_expenses/widgets/transaction_list.dart';
+
+import 'models/transaction.dart';
 
 void main() => runApp(MyApp());
 
@@ -8,113 +10,105 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter App',
+      debugShowCheckedModeBanner: false,
+      title: 'Personal Expenses',
+      theme: ThemeData(
+        fontFamily: "Quicksand",
+        primarySwatch: Colors.purple,
+        accentColor: Colors.amber,
+        textTheme: ThemeData.light().textTheme.copyWith(
+          title: TextStyle(
+            fontFamily: "OpenSans",
+            fontWeight: FontWeight.bold,
+            fontSize: 18),
+        ),
+        appBarTheme: AppBarTheme(
+          textTheme: ThemeData.light().textTheme.copyWith( //apply to all titles in app bars
+            title: TextStyle(
+              fontFamily: "OpenSans",
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              ),
+            ),
+          )
+      ),
       home: MyHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
 
-  final List<Transaction> transactions = [
-    new Transaction(id: "t1", title: "New Shoes", amount: 69.99, date: DateTime.now()),
-    new Transaction(id: "t2", title: "Weekly Groceries", amount: 16.53, date: DateTime.now())
-  ];
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
 
   final titalController = TextEditingController();
   final amountController = TextEditingController();
+
+  final List<Transaction> _userTransactions = [
+    //new Transaction(id: "t1", title: "New Shoes", amount: 69.99, date: DateTime.now()),
+    //new Transaction(id: "t2", title: "Weekly Groceries", amount: 16.53, date: DateTime.now())
+  ];
+
+  void _addNewTransaction(String txTitle, double txAmount) {
+    final newTx = Transaction(
+      title: txTitle,
+      amount: txAmount,
+      date: DateTime.now(),
+      id: DateTime.now().toString());
+
+      setState(() {
+        _userTransactions.add(newTx);
+      });
+  }
+
+  void _startAddNewTransaction(BuildContext ctx) {
+    showModalBottomSheet(context: ctx, builder: (_) {
+      return GestureDetector(
+        onTap: () {}, //get it to close when tapping on background
+        child: NewTransaction(_addNewTransaction),
+        behavior: HitTestBehavior.opaque, 
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false, //prevents keyboard from overflowing
+      //this was fixed by wrapping Column into SingleChildScrollView
         appBar: AppBar(
-          title: Text('Flutter App'),
+          title: Text('Personal Expenses'),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () => _startAddNewTransaction(context)),
+          ],
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Container(
-              width: double.infinity,
-              child: Card(
-                color: Colors.blue,
-                child: Text("CHART!"),
-                elevation: 10,
-              ),
-            ),
-
-            Card(
-              elevation: 5,
-              child: Container(
-                padding: EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: <Widget>[
-                    TextField(decoration: InputDecoration(labelText: "Title"),
-                      controller: titalController,
-                    ),
-                    TextField(decoration: InputDecoration(labelText: "Amount"),
-                      controller: amountController,
-                    ),
-                    FlatButton(
-                      child: Text("Add Transaction"),
-                      onPressed: () {
-                        print(titalController.text);
-                        print(amountController.text);
-                      },
-                      textColor: Colors.purple,
-                    )
-                  ],
+        
+        body: 
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Container(
+                width: double.infinity,
+                child: Card(
+                  color: Colors.blue,
+                  child: Text("CHART!"),
+                  elevation: 10,
                 ),
               ),
-            ),
-
-            Column(
-              children: transactions.map( (tx) {
-                return Card(
-                  child: Row(
-                    children: <Widget>[
-                      
-                      Container(
-                        padding: EdgeInsets.all(10),
-                        margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Colors.purple,
-                            width: 2,
-                            )
-                          ),
-                        child: Text(
-                          "\$${tx.amount}",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                            color: Colors.purple,
-                          )
-                        )
-                      ),
-                      
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            tx.title,
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          Text(
-                            DateFormat.yMMMd().format(tx.date),
-                            style: TextStyle(color: Colors.grey),
-                          )
-                        ],
-                      )
-                    ],
-                  )
-                );
-              }
-            ).toList(),
-          )
-        ],
-      )
-    );
-  }
+              TransactionList(_userTransactions)
+            ],
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButton: FloatingActionButton(
+            child: Icon(
+              Icons.add),
+              onPressed: () => _startAddNewTransaction(context)),
+        );
+    }
 }
